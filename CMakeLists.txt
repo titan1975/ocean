@@ -23,7 +23,7 @@ find_package(simdjson REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(ZMQ REQUIRED libzmq)
 find_package(ZLIB REQUIRED)
-target_link_libraries(OceanCore PRIVATE ZLIB::ZLIB)
+
 # Include directories
 include_directories(include)
 
@@ -36,10 +36,19 @@ add_library(OceanCore STATIC
         src/Utils/QuestDBLogger.cpp
         src/Utils/TimeLogger.cpp
         src/Strategy/LiquidityDetector.cpp
+        include/Risk/RiskManager.hpp
+        src/Risk/RiskManager.cpp
+        src/Tactics/SunTzuTactics.cpp
+        include/Detectors/MarketPhaseDetector.hpp
 )
 
+
+target_link_libraries(OceanCore PRIVATE ZLIB::ZLIB)
+
+
 # Main executable
-add_executable(OceanMain src/main.cpp)
+add_executable(OceanMain src/main.cpp
+        include/Tactics/SunTzuTactics.hpp)
 
 target_link_libraries(OceanMain PRIVATE
         OceanCore
