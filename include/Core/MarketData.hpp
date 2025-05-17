@@ -13,11 +13,18 @@
 #include <random>
 #include <array>
 
+#include "OrderBook.hpp"
+
 class OrderBook; // Forward declaration
 
 class MarketData {
 public:
-#pragma pack(push, 1)
+
+    // Add forward declaration
+    struct BinMessage;
+    struct BinOrder;
+
+    #pragma pack(push, 1)
     struct BinMessage {
         uint32_t magic = 0xDEADBEEF;  // Network byte order
         uint32_t crc32;

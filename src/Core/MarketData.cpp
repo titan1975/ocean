@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <stdexcept>
 #include <unistd.h>
+#include <poll.h> // For poll()
 
 MarketData::MarketData(std::string_view endpoint, uint16_t port)
     : endpoint_(endpoint), port_(port) {

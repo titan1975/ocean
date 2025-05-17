@@ -1,9 +1,9 @@
 #pragma once
 #include <stdfloat>       // C++23 fixed-width floats
 #include <vector>
-#include <map>            // For price level merging
-#include <shared_mutex>   // Reader-writer lock
-#include <immintrin.h>    // AVX2
+#include <map>
+#include <shared_mutex>
+#include <immintrin.h>
 
 class OrderBook {
 public:
@@ -13,22 +13,20 @@ public:
         bool is_bid;
     };
 
-    // Update order book with new orders (thread-safe)
+    // New methods to get volumes
+    [[nodiscard]] float total_bid_volume() const noexcept;
+    [[nodiscard]] float total_ask_volume() const noexcept;
+    [[nodiscard]]  float get_mid_price() const noexcept;
     void update(const std::vector<Order>& orders) noexcept;
-
-    // Get best bid/offer (thread-safe)
     [[nodiscard]] std::pair<float, float> get_bbo() const noexcept;
 
 private:
-    // Price level aggregation
     struct PriceLevel {
         std::float32_t total_amount{0};
         int order_count{0};
     };
 
-    using BookSide = std::map<std::float32_t, PriceLevel>;  // Sorted by price
-
-    // Data members
-    alignas(64) BookSide bids_, asks_;  // Cache-line aligned
-    mutable std::shared_mutex mtx_;     // Replaces spinlock
+    using BookSide = std::map<std::float32_t, PriceLevel>;
+    alignas(64) BookSide bids_, asks_;
+    mutable std::shared_mutex mtx_;
 };

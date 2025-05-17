@@ -28,6 +28,20 @@ void OrderBook::update(const std::vector<Order>& orders) noexcept {
         }
     }
 }
+// Add to OrderBook class declaration
+float get_mid_price() const noexcept {
+    std::shared_lock lock(mtx_); // Shared lock for thread safety
+
+    if (bids_.empty() || asks_.empty()) {
+        return 0.0f; // Or handle this case appropriately for your application
+    }
+
+    float best_bid = bids_.rbegin()->first;
+    float best_ask = asks_.begin()->first;
+
+    return (best_bid + best_ask) / 2.0f;
+}
+
 
 std::pair<float, float> OrderBook::get_bbo() const noexcept {
     // Reader lock (shared access)

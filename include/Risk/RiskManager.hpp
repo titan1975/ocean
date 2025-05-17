@@ -3,28 +3,20 @@
 
 class RiskManager {
 public:
-    static bool isTradeAllowed(double riskPercent) { 
-        return riskPercent <= maxSingleTradeRisk(); 
-    }
+    static bool isTradeAllowed(double riskPercent);
+    static double calculatePositionSize(double entryPrice, double stopLossPrice, double accountBalance);
+    static void adjustForVolatility(double multiplier);
+    static bool shouldStopTrading(double dailyLossPercent);
 
-    static double calculatePositionSize(double entryPrice, 
-                                     double stopLossPrice,
-                                     double accountBalance) {
-        double riskPerUnit = entryPrice - stopLossPrice;
-        if (riskPerUnit <= 0.0) return 0.0;
-        return std::floor((accountBalance * currentMaxRisk) / riskPerUnit);
-    }
+    // Account balance methods
+    static double getAccountBalance();
+    static void setAccountBalance(double newBalance);
 
-    static void adjustForVolatility(double multiplier) {
-        currentMaxRisk = std::max(0.002, maxSingleTradeRisk() / multiplier);
-    }
-
-    static bool shouldStopTrading(double dailyLossPercent) {
-        return dailyLossPercent >= maxDailyLoss();
-    }
-
+    // Add this function to calculate daily loss percentage
+    static double getDailyLossPercent(double initialBalance, double currentBalance);
 private:
     static constexpr double maxSingleTradeRisk() { return 0.01; }
     static constexpr double maxDailyLoss() { return 0.03; }
     static inline double currentMaxRisk = maxSingleTradeRisk();
+    static inline double accountBalance = 0.0;  // Initialize to 0 or some default
 };

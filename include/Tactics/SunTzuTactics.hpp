@@ -1,6 +1,14 @@
 #pragma once
-#include "OrderBook.hpp"
+#include "Core/OrderBook.hpp"
 #include <immintrin.h>
+#include <span>
+
+
+// Forward declare Trade if not already defined
+struct Trade {
+    float price;
+    float amount;
+};
 
 namespace SunTzu {
     enum class MarketPhase { RANGING, TRENDING, CHAOS };

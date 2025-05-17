@@ -1,6 +1,7 @@
 #include <iostream>
 #include <thread>
 #include <atomic>
+#include <csignal>
 #include <vector>
 #include <memory>
 #include <signal.h>
@@ -11,6 +12,10 @@
 #include "Tactics/SunTzuTactics.hpp"
 #include "Analysis/MarketPhaseDetector.hpp"
 
+
+class MarketPhaseDetector;
+class OrderBook;
+class MarketData;
 // Global kill switch with Sun Tzu wisdom
 std::atomic<bool> global_blood_moon{false};
 
@@ -27,7 +32,7 @@ void liquid_blood(MarketData& market, OrderBook& book, MarketPhaseDetector& phas
         // Sun Tzu Principle: "Know the terrain"
         auto updates = market.get_updates();
         phase_detector.update(book.get_mid_price());
-        SunTzu::adjustForMarketPhase(phase_detector.get_phase());
+        SunTzu::adjustForMarketPhase(phase_detector.getPhase());
 
         if (updates.empty()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -66,6 +71,9 @@ void liquid_blood(MarketData& market, OrderBook& book, MarketPhaseDetector& phas
 //------------------------------------------------------------------
 int main() {
     try {
+
+
+
         // Sun Tzu Principle: "Preparation determines victory"
         MarketData market("127.0.0.1", 1337);
         OrderBook book;
@@ -88,13 +96,22 @@ int main() {
             std::cout << "\n忍 (Enduring the retreat)\n";
             global_blood_moon = true;
         });
-
+        double initialDailyBalance = 300;/* your initial daily balance */;
+        double currentBalance = 350/* your current balance */;
         // Emergency stop conditions
         while (!global_blood_moon) {
-            if (RiskManager::shouldStopTrading(get_daily_loss_percent())) {
+
+            double initialDailyBalance = 300;/* your initial daily balance */;
+            double currentBalance = 350/* your current balance */;
+
+            if (RiskManager::shouldStopTrading(RiskManager::getDailyLossPercent(initialDailyBalance, currentBalance))) {
                 std::cerr << "⚔️ Daily loss limit reached! Withdrawing!\n";
                 break;
             }
+
+
+
+
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
 

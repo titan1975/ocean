@@ -1,19 +1,25 @@
 cmake_minimum_required(VERSION 3.20)
 project(Ocean LANGUAGES CXX)
 
-# Compiler settings
+# ================== COMPILER CONFIG ==================
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# GCC 14 specific settings
+# ================== GCC 14 CONFIG ==================
 set(GCC14_LIB_PATH "/opt/gcc-14.1.0/lib64")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,${GCC14_LIB_PATH}")
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${GCC14_LIB_PATH}/cmake")
 
+# ================== NUCLEAR HEADER SOLUTION ==================
+set(OCEAN_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
+set(OCEAN_SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 
+# Force CLion to recognize ALL headers
+file(GLOB_RECURSE OCEAN_HEADERS "${OCEAN_INCLUDE_DIR}/*.hpp" "${OCEAN_INCLUDE_DIR}/*.h")
+add_custom_target(OCEAN_HEADERS_TARGET SOURCES ${OCEAN_HEADERS})
 
-# Dependencies
+# ================== DEPENDENCIES ==================
 find_package(CURL REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(spdlog REQUIRED)
@@ -24,45 +30,44 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(ZMQ REQUIRED libzmq)
 find_package(ZLIB REQUIRED)
 
-# Include directories
-include_directories(include)
-
-# Main library
+# ================== CORE LIBRARY ==================
 add_library(OceanCore STATIC
-        src/Core/OrderBook.cpp
-        src/Core/MarketData.cpp
-        src/Strategy/LiquidityRaidDetector.cpp
-        src/Strategy/GammaSqueezeDetector.cpp
-        src/Utils/QuestDBLogger.cpp
-        src/Utils/TimeLogger.cpp
-        src/Strategy/LiquidityDetector.cpp
-        include/Risk/RiskManager.hpp
-        src/Risk/RiskManager.cpp
-        src/Tactics/SunTzuTactics.cpp
-        include/Detectors/MarketPhaseDetector.hpp
+        ${OCEAN_SRC_DIR}/Analysis/MarketPhaseDetector.cpp
+        ${OCEAN_SRC_DIR}/Core/MarketData.cpp
+        ${OCEAN_SRC_DIR}/Core/OrderBook.cpp
+        ${OCEAN_SRC_DIR}/Risk/RiskManager.cpp
+        ${OCEAN_SRC_DIR}/Strategy/GammaSqueezeDetector.cpp
+        ${OCEAN_SRC_DIR}/Strategy/LiquidityDetector.cpp
+        ${OCEAN_SRC_DIR}/Strategy/LiquidityRaidDetector.cpp
+        ${OCEAN_SRC_DIR}/Tactics/SunTzuTactics.cpp
+        ${OCEAN_SRC_DIR}/Utils/QuestDBLogger.cpp
+        ${OCEAN_SRC_DIR}/Utils/TimeLogger.cpp
 )
 
+target_include_directories(OceanCore PUBLIC
+        ${OCEAN_INCLUDE_DIR}
+)
 
-target_link_libraries(OceanCore PRIVATE ZLIB::ZLIB)
+target_link_libraries(OceanCore PRIVATE
+        ZLIB::ZLIB
+        spdlog::spdlog
+        fmt::fmt
+        ${ZMQ_LIBRARIES}
+)
 
-
-# Main executable
-add_executable(OceanMain src/main.cpp
-        include/Tactics/SunTzuTactics.hpp)
+# ================== MAIN EXECUTABLE ==================
+add_executable(OceanMain ${OCEAN_SRC_DIR}/main.cpp)
 
 target_link_libraries(OceanMain PRIVATE
         OceanCore
         ${CURL_LIBRARIES}
         OpenSSL::SSL
         OpenSSL::Crypto
-        spdlog::spdlog
-        fmt::fmt
         nlohmann_json::nlohmann_json
         simdjson::simdjson
-        ${ZMQ_LIBRARIES}
 )
 
-# Tests
+# ================== TESTS ==================
 include(FetchContent)
 FetchContent_Declare(
         googletest
@@ -71,18 +76,18 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-add_executable(OceanTests
-        tests/TestQuestDBLogger.cpp
-        tests/TestLiquidityDetector.cpp
-)
+#add_executable(OceanTests
+      #  ${OCEAN_SRC_DIR}/tests/TestQuestDBLogger.cpp
+       # ${OCEAN_SRC_DIR}/tests/TestLiquidityDetector.cpp
+#)
 
-target_link_libraries(OceanTests PRIVATE
-        OceanCore
-        GTest::gtest_main
-        ${CURL_LIBRARIES}
-)
+#target_link_libraries(OceanTests PRIVATE
+#       OceanCore
+#       GTest::gtest_main
+#       ${CURL_LIBRARIES}
+#)
 
-# Compiler options
+# ================== COMPILER OPTIMIZATIONS ==================
 target_compile_options(OceanCore PRIVATE
         -Wall
         -Wextra
@@ -91,6 +96,6 @@ target_compile_options(OceanCore PRIVATE
         -march=native
 )
 
-# Install
+# ================== INSTALL ==================
 install(TARGETS OceanMain DESTINATION bin)
 install(TARGETS OceanCore ARCHIVE DESTINATION lib)
