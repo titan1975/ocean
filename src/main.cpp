@@ -24,8 +24,8 @@ std::atomic<bool> global_blood_moon{false};
 //------------------------------------------------------------------
 void liquid_blood(MarketData& market, OrderBook& book, MarketPhaseDetector& phase_detector) {
     LiquidityRaidDetector raid_detector({
-        .min_wick_ratio = 1.8f,
-        .volume_spike_multiplier = 2.5f
+        .volume_spike_multiplier = 2.5f,  // This should come first
+           .min_wick_ratio = 1.8f
     });
 
     while (!global_blood_moon) {
