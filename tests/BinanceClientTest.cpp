@@ -1,7 +1,7 @@
 //
 // Created by hera on 5/18/25.
 //
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include "Clients/BinanceClient.hpp"
 #include <atomic>
 #include <thread>
@@ -41,7 +41,7 @@ public:
     }
 
     size_t getMessageCount() const {
-        std::lock_guard<std::mutex> lock(mutex_);
+        std::lock_guard<std::mutex> lock(mutex_);  // Now works!
         return message_count_;
     }
 
@@ -50,7 +50,7 @@ private:
     std::thread server_thread_;
     std::vector<std::string> messages_;
     size_t message_count_ = 0;
-    std::mutex mutex_;
+    mutable std::mutex mutex_;  // Key fix
 };
 
 class BinanceClientTest : public ::testing::Test {

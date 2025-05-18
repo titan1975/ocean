@@ -125,3 +125,14 @@ int main() {
     return EXIT_SUCCESS;
 }
 
+// BinanceClient client("BTCUSDT");
+// if (client.start()) {
+//     while (true) {
+//         auto updates = client.get_updates();
+//         if (!updates.empty()) {
+//             // Process updates
+//         }
+//         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+//     }
+// }
+// client.stop();
