@@ -11,6 +11,7 @@
 #include "Risk/RiskManager.hpp"
 #include "Tactics/SunTzuTactics.hpp"
 #include "Analysis/MarketPhaseDetector.hpp"
+#include "Clients/BinanceWSClient.hpp"
 #include "Core/MarketData.hpp"
 
 
@@ -73,8 +74,35 @@ void liquid_blood(MarketData& market, OrderBook& book, MarketPhaseDetector& phas
 int main() {
     try {
 
-        
+        net::io_context ioc;
+        ssl::context ctx{ssl::context::tlsv12_client};
+        ctx.set_default_verify_paths();
 
+        BinanceWSClient btc_client(ioc, ctx, "btcusdt");
+        btc_client.start();
+
+        std::thread ioc_thread([&ioc]{
+            ioc.run();
+        });
+        // Access data in your main loop
+        while (true) {
+            auto& data = btc_client.get_market_data();
+            std::lock_guard<std::mutex> lock(data.mutex);
+            if (data.connected) {
+
+
+
+                std::cout << "BTC/USDT - Bid: " << data.bid
+                          << " | Ask: " << data.ask
+                          << " | TS: " << data.timestamp << '\n';
+            } else {
+                std::cout << "Disconnected\n";
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+
+        ioc_thread.join();
         // Sun Tzu Principle: "Preparation determines victory"
         MarketData market("127.0.0.1", 1337);
         OrderBook book;
