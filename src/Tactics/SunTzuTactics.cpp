@@ -30,6 +30,10 @@ SunTzu::MarketPhase SunTzu::detectMarketPhase(const std::vector<float>& prices) 
 }
 
 SunTzu::LiquidityRaidConfig SunTzu::detectLiquidityRaid(const OrderBook& book, std::span<const Trade> trades) {
+
+    (void)book;
+    (void)trades;
+
     return {
         .volume_spike_multiplier = 2.5f,
         .time_window_seconds = 30.0f,

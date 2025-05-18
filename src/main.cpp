@@ -5,12 +5,13 @@
 #include <vector>
 #include <memory>
 #include <signal.h>
-#include "Core/MarketData.hpp"
-#include "Core/OrderBook.hpp"
+
+
 #include "Strategy/LiquidityRaidDetector.hpp"
 #include "Risk/RiskManager.hpp"
 #include "Tactics/SunTzuTactics.hpp"
 #include "Analysis/MarketPhaseDetector.hpp"
+#include "Core/MarketData.hpp"
 
 
 class MarketPhaseDetector;
@@ -109,9 +110,6 @@ int main() {
                 break;
             }
 
-
-
-
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
 
@@ -126,3 +124,4 @@ int main() {
     }
     return EXIT_SUCCESS;
 }
+
