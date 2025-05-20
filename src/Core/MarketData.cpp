@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <unistd.h>
 #include <poll.h> // For poll()
+#include <utility>
 
 // Constructor: Initializes the endpoint and port, checks for empty endpoint, and reserves buffer space.
 MarketData::MarketData(std::string_view endpoint, uint16_t port)
@@ -208,7 +209,7 @@ void MarketData::apply_backoff() noexcept {
     std::uniform_int_distribution<> jitter(-100, 100);
     const uint32_t delay_ms = std::min(
         base_delay_ms * (1 << std::min(attempts, 10U)) + jitter(gen_),
-        max_delay_msF
+        max_delay_ms
     );
 
     std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
@@ -219,4 +220,3 @@ std::span<const OrderBook::Order> MarketData::get_updates() noexcept {
     std::lock_guard<std::mutex> lock(buffer_mutex_);
     return {buffer_.data(), buffer_size_.load()};
 }
-F

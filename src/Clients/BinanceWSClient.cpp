@@ -8,7 +8,7 @@
 #include <iomanip>
 #include <boost/asio/strand.hpp>
 #include <openssl/err.h>
-
+#include <utility>
 namespace beast = boost::beast;
 namespace websocket = beast::websocket;
 namespace net = boost::asio;
