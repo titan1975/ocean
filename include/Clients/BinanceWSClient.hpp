@@ -1,5 +1,5 @@
 #pragma once
-
+#include <utility>
 #include <boost/asio.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/beast.hpp>
@@ -33,14 +33,17 @@ public:
         int depth_level = 20,
         const std::string& update_speed = "100ms"
     );
+
+
+    BinanceWSClient(const BinanceWSClient&) = delete;
+    BinanceWSClient& operator=(const BinanceWSClient&) = delete;
+    //BinanceWSClient(net::io_context& ioc, ssl::context& ctx, const std::string& symbol);
     ~BinanceWSClient();
 
     void start();
     void stop();
     MarketData& get_market_data() noexcept;
 
-    BinanceWSClient(const BinanceWSClient&) = delete;
-    BinanceWSClient& operator=(const BinanceWSClient&) = delete;
 
 private:
     class Impl;
