@@ -1,81 +1,35 @@
 #pragma once
-#include <vector>
-#include <atomic>
-#include <span>
-#include <string_view>
-#include <thread>
+#include "Core/OrderBook.hpp"
+#include "Clients/BinanceWSClient.hpp"
 #include <mutex>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <immintrin.h>
-#include <chrono>
-#include <random>
-#include <array>
-#include <utility>
-#include "OrderBook.hpp"
-
-class OrderBook; // Forward declaration
+#include <atomic>
+#include <thread>
+#include <vector>
 
 class MarketData {
 public:
+    MarketData(std::string symbol = "btcusdt");
 
-    // Add forward declaration
-    struct BinMessage;
-    struct BinOrder;
+     ~MarketData();
 
-    #pragma pack(push, 1)
-    struct BinMessage {
-        uint32_t magic = 0xDEADBEEF;  // Network byte order
-        uint32_t crc32;
-        uint64_t timestamp;  // nanos
-        uint16_t count;      // orders in packet
-    };
-    struct BinOrder {
-        float price;
-        float amount;
-        uint8_t side;  // 0=bid, 1=ask
-    };
-#pragma pack(pop)
-
-    explicit MarketData(std::string_view endpoint, uint16_t port = 443);
-    ~MarketData();
-
-    // Non-copyable
-    MarketData(const MarketData&) = delete;
-    MarketData& operator=(const MarketData&) = delete;
-
-    // Thread-safe interface
     bool start() noexcept;
     void stop() noexcept;
     std::span<const OrderBook::Order> get_updates() noexcept;
 
 private:
-    void io_thread() noexcept;
-    bool try_connect() noexcept;
-    uint32_t calculate_crc32(const void* data, size_t length) const noexcept;
-    void apply_backoff() noexcept;
+    void process_binance_data(const BinanceWSClient::MarketData& ws_data);
 
-    // Connection state
-    std::atomic<int> fd_{-1};
-    std::string endpoint_;
+    std::string symbol_;
     std::atomic<bool> running_{false};
-    std::atomic<bool> connected_{false};
-    std::atomic<uint16_t> port_;
     std::jthread io_thread_;
-
-    // Data buffer
+    std::jthread processing_thread_;
     std::vector<OrderBook::Order> buffer_;
+    std::mutex buffer_mutex_;
+
     std::atomic<size_t> buffer_size_{0};
-    std::mutex buffer_mutex_;  // Protects buffer_ and buffer_size_
 
-    // Backoff state
-    std::atomic<uint32_t> reconnect_attempts_{0};
-    std::random_device rd_;
-    std::mt19937 gen_{rd_()};
-
-    // Constants
-    static constexpr size_t kRecvBufferSize = 8192;
-    static constexpr uint32_t kMaxBackoffMs = 5000;
-    static constexpr uint32_t kBaseBackoffMs = 100;
+    // Binance WebSocket client
+    std::unique_ptr<BinanceWSClient> binance_client_;
+    net::io_context ioc_;
+    ssl::context ssl_ctx_{ssl::context::tlsv12_client};
 };
