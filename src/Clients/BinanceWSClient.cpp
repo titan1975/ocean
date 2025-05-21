@@ -174,9 +174,9 @@ private:
             buffer_.consume(buffer_.size());
 
             // Full JSON dump
-            std::cout << "\n[RAW MESSAGE] " << std::string(50, '-') << "\n"
-                      << std::setw(4) << data << "\n"
-                      << std::string(50, '-') << std::endl;
+            // std::cout << "\n[RAW MESSAGE] " << std::string(50, '-') << "\n"
+            //           << std::setw(4) << data << "\n"
+            //           << std::string(50, '-') << std::endl;
 
             // Process market data
             {
@@ -188,10 +188,10 @@ private:
                         std::chrono::system_clock::now().time_since_epoch())
                     .count());
 
-                std::cout << "[MARKET DATA] "
-                          << "Bid: " << data_.bid << " | "
-                          << "Ask: " << data_.ask << " | "
-                          << "Time: " << data_.timestamp << std::endl;
+                // std::cout << "[MARKET DATA] "
+                //           << "Bid: " << data_.bid << " | "
+                //           << "Ask: " << data_.ask << " | "
+                //           << "Time: " << data_.timestamp << std::endl;
             }
 
         } catch (const std::exception& e) {

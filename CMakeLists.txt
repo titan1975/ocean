@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS "-O3 -march=native")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb3")
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread")
 # ================== CMP0167 POLICY FOR BOOST ==================
 cmake_policy(SET CMP0167 NEW)
 
