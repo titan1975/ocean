@@ -242,3 +242,96 @@ void BinanceWSClient::stop() {
 BinanceWSClient::MarketData& BinanceWSClient::get_market_data() noexcept {
     return pimpl_->get_data();
 }
+
+std::vector<OrderBook::Order> BinanceWSClient::get_snapshot(int depth) {
+    namespace beast = boost::beast;
+    namespace http = beast::http;
+    namespace net = boost::asio;
+    namespace ssl = net::ssl;
+
+    try {
+        // 1. Create I/O context
+        net::io_context ioc;
+
+        // 2. Create SSL context
+        ssl::context ctx{ssl::context::tlsv12_client};
+        ctx.set_default_verify_paths();
+
+        // 3. Create resolver and stream
+        tcp::resolver resolver{ioc};
+        beast::ssl_stream<beast::tcp_stream> stream{ioc, ctx};
+
+        // 4. Set SNI hostname
+        if(!SSL_set_tlsext_host_name(stream.native_handle(), "api.binance.com")) {
+            throw beast::system_error(
+                beast::error_code(
+                    static_cast<int>(::ERR_get_error()),
+                    net::error::get_ssl_category()),
+                "Failed to set SNI Hostname");
+        }
+
+        // 5. Resolve and connect
+        auto const results = resolver.resolve("api.binance.com", "443");
+        beast::get_lowest_layer(stream).connect(results);
+
+        // 6. SSL handshake
+        stream.handshake(ssl::stream_base::client);
+
+        // 7. Prepare HTTP request
+        std::string target = "/api/v3/depth?symbol=" + symbol_ +
+                           "&limit=" + std::to_string(depth);
+        http::request<http::string_body> req{http::verb::get, target, 11};
+        req.set(http::field::host, "api.binance.com");
+        req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+
+        // 8. Send HTTP request
+        http::write(stream, req);
+
+        // 9. Receive HTTP response
+        beast::flat_buffer buffer;
+        http::response<http::dynamic_body> res;
+        http::read(stream, buffer, res);
+
+        // 10. Parse JSON
+        nlohmann::json json = nlohmann::json::parse(beast::buffers_to_string(res.body().data()));
+
+        // 11. Graceful shutdown
+        beast::error_code ec;
+        stream.shutdown(ec);
+        if(ec == net::error::eof) {
+            ec = {};
+        }
+        if(ec) {
+            throw beast::system_error(ec);
+        }
+
+        return parse_snapshot(json);
+    } catch(const std::exception& e) {
+        std::cerr << "Snapshot error: " << e.what() << std::endl;
+        throw;
+    }
+}
+
+std::vector<OrderBook::Order> BinanceWSClient::parse_snapshot(const nlohmann::json& json) {
+    std::vector<OrderBook::Order> snapshot;
+
+    // Process bids
+    for(auto& bid : json["bids"]) {
+        snapshot.emplace_back(OrderBook::Order{
+            .price = std::stof(bid[0].get<std::string>()),
+            .amount = std::stof(bid[1].get<std::string>()),
+            .is_bid = true
+        });
+    }
+
+    // Process asks
+    for(auto& ask : json["asks"]) {
+        snapshot.emplace_back(OrderBook::Order{
+            .price = std::stof(ask[0].get<std::string>()),
+            .amount = std::stof(ask[1].get<std::string>()),
+            .is_bid = false
+        });
+    }
+
+    return snapshot;
+}

@@ -114,6 +114,35 @@ int main() {
     try {
         std::cout << "🚀 Initializing trading system...\n";
         std::cout << "🔌 Connecting to BTC/USDT market...\n";
+
+        net::io_context ioc;
+        ssl::context ctx{ssl::context::tlsv12_client};
+        ctx.set_default_verify_paths();
+
+        // 1. Initialize client
+        BinanceWSClient client(ioc, ctx, "btcusdt");
+
+
+        // 2. Get initial snapshot (blocking call)
+        std::cout << "Fetching order book snapshot...\n";
+        OrderBook book;
+        auto snapshot = client.get_snapshot();
+        book.initialize(snapshot);
+        std::cout << "Order book initialized with " << snapshot.size() << " levels\n";
+
+        // 3. Start WebSocket for live updates
+        client.start();
+
+
+        // 4. Start strategy thread
+        MarketPhaseDetector phase_detector;
+        std::jthread strategy([&] {
+            liquid_blood(client.get_market_data(), book, phase_detector);
+        });
+
+        // 5. Run IO context in main thread
+        ioc.run();
+
         MarketData market("btcusdt");
 
         if (!market.start()) {
@@ -122,6 +151,9 @@ int main() {
         std::cout << "✅ Market data connected successfully\n";
 
         OrderBook book;
+        std::cout << "📖 Initializing order book...\n";
+
+        market.get_snapshot();
         MarketPhaseDetector phase_detector;
 
         std::cout << "🧵 Starting strategy thread...\n";

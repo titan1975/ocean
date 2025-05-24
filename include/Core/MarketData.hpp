@@ -14,7 +14,11 @@ public:
 
     bool start() noexcept;
     void stop() noexcept;
+   // void initialize(const std::vector<Order>& snapshot);
+
     std::span<const OrderBook::Order> get_updates() noexcept;
+
+    std::vector<OrderBook::Order> get_snapshot();
 
 private:
     void process_binance_data(const BinanceWSClient::MarketData& ws_data);

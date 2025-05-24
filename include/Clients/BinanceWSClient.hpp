@@ -1,5 +1,5 @@
 #pragma once
-#include <utility>
+#include "Core/OrderBook.hpp"
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include <boost/beast/ssl.hpp>
@@ -24,26 +24,19 @@ public:
         std::mutex mutex;
     };
 
-    BinanceWSClient(
-        net::io_context& ioc,
-        ssl::context& ctx,
-        const std::string& symbol,
-        int depth_level = 20,
-        const std::string& update_speed = "100ms"
-    );
-
-
-    BinanceWSClient(const BinanceWSClient&) = delete;
-    BinanceWSClient& operator=(const BinanceWSClient&) = delete;
-    //BinanceWSClient(net::io_context& ioc, ssl::context& ctx, const std::string& symbol);
+    BinanceWSClient(net::io_context& ioc, ssl::context& ctx, const std::string& symbol);
     ~BinanceWSClient();
 
     void start();
     void stop();
     MarketData& get_market_data() noexcept;
+    std::vector<OrderBook::Order> get_snapshot(int depth = 1000);
 
+    BinanceWSClient(const BinanceWSClient&) = delete;
+    BinanceWSClient& operator=(const BinanceWSClient&) = delete;
 
 private:
     class Impl;
     std::unique_ptr<Impl> pimpl_;
+    std::string symbol_;
 };
