@@ -6,7 +6,7 @@
 
 class BinanceClient final : public IMarketDataSource {
 public:
-    explicit BinanceClient(std::string symbol);
+     explicit BinanceClient(std::string symbol);
     std::span<const OrderBook::Order> get_updates() noexcept override;
     bool start() noexcept override;
     void stop() noexcept override;
