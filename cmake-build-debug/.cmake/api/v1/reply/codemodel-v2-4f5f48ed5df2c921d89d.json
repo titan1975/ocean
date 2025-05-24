@@ -1,0 +1,88 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-f7a6d8276b5269954a5c.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "Ocean",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "OCEAN_HEADERS_TARGET::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-OCEAN_HEADERS_TARGET-Debug-89e062da99c92ed54b0b.json",
+					"name" : "OCEAN_HEADERS_TARGET",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "OceanCore::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-OceanCore-Debug-8213e52273a6437c14d4.json",
+					"name" : "OceanCore",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "OceanMain::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-OceanMain-Debug-bb1bd6d43245229635c1.json",
+					"name" : "OceanMain",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "TradingSystem::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-TradingSystem-Debug-2c3ff8ca5d17912bffec.json",
+					"name" : "TradingSystem",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/hera/CLionProjects/ocean/cmake-build-debug",
+		"source" : "/home/hera/CLionProjects/ocean"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}
