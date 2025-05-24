@@ -150,7 +150,7 @@ int main() {
         }
         std::cout << "✅ Market data connected successfully\n";
 
-        OrderBook book;
+
         std::cout << "📖 Initializing order book...\n";
 
         market.get_snapshot();
