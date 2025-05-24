@@ -125,3 +125,6 @@
 /cmake-build-debug/CMakeFiles/OceanTests.dir/tests/TestLiquidityDetector.cpp.o
 /cmake-build-debug/CMakeFiles/OceanTests.dir/tests/TestQuestDBLogger.cpp.o
 /cmake-build-debug/TradingSystem
+/cmake-build-debug/CMakeFiles/OceanCore.dir/src/Clients/BinanceWSClient.cpp.o
+/cmake-build-debug/CMakeFiles/OceanMain.dir/src/Clients/BinanceWSClient.cpp.o
+/cmake-build-debug/CMakeFiles/TradingSystem.dir/src/Clients/BinanceWSClient.cpp.o
