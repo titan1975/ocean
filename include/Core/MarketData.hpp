@@ -1,81 +1,66 @@
-#pragma once
-#include <vector>
-#include <atomic>
-#include <span>
-#include <string_view>
-#include <thread>
-#include <mutex>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <immintrin.h>
-#include <chrono>
-#include <random>
-#include <array>
+#ifndef MARKETDATA_HPP
+#define MARKETDATA_HPP
 
-#include "OrderBook.hpp"
+#include <string>
+#include <mutex>   // For std::mutex
+#include <cstdint> // For uint64_t
+#include <vector>  // For std::vector
 
-class OrderBook; // Forward declaration
+// Include your actual OrderBook header to use OrderBook::Order
+// Ensure this path is correct relative to where MarketData.hpp is located.
+#include "Core/OrderBook.hpp"
 
+// Define a simple struct to hold a snapshot of market data.
+// This struct contains only data members and is trivially copyable.
+// It's designed to be a value-type that can be safely copied between threads.
+struct MarketDataSnapshot {
+    double bid = 0.0;
+    double ask = 0.0;
+    uint64_t timestamp = 0;  // Timestamp (milliseconds since epoch)
+    bool connected = false;  // Connection status at the time of the snapshot
+
+    // Vector to hold recent depth updates (bids and asks from the WS stream).
+    // A copy of this vector will be made when a snapshot is taken.
+    std::vector<OrderBook::Order> recent_depth_updates;
+};
+
+// The MarketData class manages the current state of market data,
+// ensuring thread-safe access and updates.
 class MarketData {
 public:
+    // Default constructor. Member variables are default-initialized.
+    MarketData() = default;
 
-    // Add forward declaration
-    struct BinMessage;
-    struct BinOrder;
+    // Public method to retrieve a consistent, thread-safe snapshot of the current market data.
+    // This method is marked 'const' because it does not modify the state of the MarketData object.
+    MarketDataSnapshot get_updates() const;
 
-    #pragma pack(push, 1)
-    struct BinMessage {
-        uint32_t magic = 0xDEADBEEF;  // Network byte order
-        uint32_t crc32;
-        uint64_t timestamp;  // nanos
-        uint16_t count;      // orders in packet
-    };
-    struct BinOrder {
-        float price;
-        float amount;
-        uint8_t side;  // 0=bid, 1=ask
-    };
-#pragma pack(pop)
-
-    explicit MarketData(std::string_view endpoint, uint16_t port = 443);
-    ~MarketData();
-
-    // Non-copyable
-    MarketData(const MarketData&) = delete;
-    MarketData& operator=(const MarketData&) = delete;
-
-    // Thread-safe interface
-    bool start() noexcept;
-    void stop() noexcept;
-    std::span<const OrderBook::Order> get_updates() noexcept;
+    // Public method to update the internal market data.
+    // This method should be called by the WebSocket client (e.g., BinanceWSClient::Impl::on_read)
+    // whenever new market data arrives. It handles locking internally.
+    void update_market_data(
+        double new_bid,
+        double new_ask,
+        uint64_t new_timestamp,
+        bool new_connected,
+        const std::vector<OrderBook::Order>& new_depth_updates
+    );
 
 private:
-    void io_thread() noexcept;
-    bool try_connect() noexcept;
-    uint32_t calculate_crc32(const void* data, size_t length) const noexcept;
-    void apply_backoff() noexcept;
+    // Mutex to protect access to the data members below.
+    // This ensures that only one thread can read or write these members at a time.
+    // The trailing underscore `_` is a common convention for private member variables.
+    mutable std::mutex mutex_; // 'mutable' is needed because get_updates() is const
 
-    // Connection state
-    std::atomic<int> fd_{-1};
-    std::string endpoint_;
-    std::atomic<bool> running_{false};
-    std::atomic<bool> connected_{false};
-    std::atomic<uint16_t> port_;
-    std::jthread io_thread_;
+    // Private members to store the latest market data.
+    // These are updated via the `update_market_data` method and read via `get_updates`.
+    double bid_ = 0.0;        // Latest best bid price.
+    double ask_ = 0.0;        // Latest best ask price.
+    uint64_t timestamp_ = 0;  // Timestamp (milliseconds since epoch) of the last update.
+    bool connected_ = false;  // Connection status of the WebSocket.
 
-    // Data buffer
-    std::vector<OrderBook::Order> buffer_;
-    std::atomic<size_t> buffer_size_{0};
-    std::mutex buffer_mutex_;  // Protects buffer_ and buffer_size_
-
-    // Backoff state
-    std::atomic<uint32_t> reconnect_attempts_{0};
-    std::random_device rd_;
-    std::mt19937 gen_{rd_()};
-
-    // Constants
-    static constexpr size_t kRecvBufferSize = 8192;
-    static constexpr uint32_t kMaxBackoffMs = 5000;
-    static constexpr uint32_t kBaseBackoffMs = 100;
+    // Vector to hold recent depth updates.
+    std::vector<OrderBook::Order> recent_depth_updates_;
 };
+
+#endif // MARKETDATA_HPP

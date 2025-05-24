@@ -49,8 +49,8 @@ add_library(OceanCore STATIC
         ${OCEAN_SRC_DIR}/Tactics/SunTzuTactics.cpp
         ${OCEAN_SRC_DIR}/Utils/QuestDBLogger.cpp
         ${OCEAN_SRC_DIR}/Utils/TimeLogger.cpp
-        src/Clients/BinanceWSClient.cpp
-        include/Clients/BinanceWSClient.hpp
+        ${OCEAN_SRC_DIR}/Clients/BinanceWSClient.cpp
+
 
 )
 
@@ -91,8 +91,7 @@ target_link_libraries(OceanMain PRIVATE
 
 # ================== TRADING SYSTEM EXECUTABLE ==================
 add_executable(TradingSystem ${OCEAN_SRC_DIR}/main.cpp
-        src/Clients/BinanceWSClient.cpp
-        include/Clients/BinanceWSClient.hpp)
+        src/Clients/BinanceWSClient.cpp)
 
 target_include_directories(TradingSystem PRIVATE
         ${Boost_INCLUDE_DIRS}

@@ -1,0 +1,5 @@
+if(EXISTS "/home/hera/CLionProjects/ocean/cmake-build-debug/OceanTests[1]_tests.cmake")
+  include("/home/hera/CLionProjects/ocean/cmake-build-debug/OceanTests[1]_tests.cmake")
+else()
+  add_test(OceanTests_NOT_BUILT OceanTests_NOT_BUILT)
+endif()
